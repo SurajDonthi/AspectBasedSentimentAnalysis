@@ -1,23 +1,33 @@
 import inspect
 import json
 from argparse import ArgumentParser
+from typing import List, Union
 
 import pytorch_lightning as pl
 import torch as th
 from pytorch_lightning.utilities import parsing
 from torch.utils.data import Dataset
+from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
+
+from ..utils import update_args
 
 
 class BaseDataset(Dataset):
 
-    def __init__(self, input, labels=None, max_len=256) -> None:
+    def __init__(
+        self,
+        input: Union[str, list],
+        labels: Union[str, list],
+        tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
+        encoder_args={}
+    ) -> None:
         super().__init__()
 
         # If filepath is true, then implement a parsing function to get self.input & self.labels
         self.input, self.labels = input, labels
-        self.max_len = max_len
-
-        self._tokenizer = None
+        self._tokenizer = tokenizer
+        encoder_args = update_args(self.tokenizer.encode_plus, encoder_args)
+        self._encoder_args = encoder_args
 
     def __getitem__(self, index):
         text, target = self.input[index], self.labels[index]
@@ -25,14 +35,15 @@ class BaseDataset(Dataset):
         # Replace this with a more generic tokenizer/ability to change any tokenization params
         self.encoding = self._tokenizer.encode_plus(
             text,
-            add_special_tokens=True,
-            max_length=self.max_len,
-            return_token_type_ids=False,
-            padding='max_length',
-            truncation=True,
-            return_attention_mask=True,
-            return_tensors='pt',
+            **self._encoder_args
         )
+        # add_special_tokens=True,
+        # max_length=self.max_len,
+        # return_token_type_ids=False,
+        # padding='max_length',
+        # truncation=True,
+        # return_attention_mask=True,
+        # return_tensors='pt',
 
         return \
             self.encoding.input_ids.squeeze(), \
