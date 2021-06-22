@@ -12,14 +12,16 @@ from pytorch_lightning.utilities import parsing
 from torch.utils.data import DataLoader, random_split
 from transformers import (AdamW, BertModel, BertTokenizer, DistilBertModel,
                           DistilBertTokenizer, PreTrainedTokenizer,
-                          SqueezeBertModel, SqueezeBertTokenizer,
+                          PreTrainedTokenizerFast, SqueezeBertModel,
+                          SqueezeBertTokenizer,
                           get_linear_schedule_with_warmup)
 from typing_extensions import Literal
 
-from base import BaseModule
-from data import SentimentDataset
-from models import (DummyClassifier, SequenceClassifierModel,
-                    TokenClassifierModel)
+from .base import BaseModule
+from .data import SemEvalXMLDataset
+from .models import (DummyClassifier, SequenceClassifierModel,
+                     TokenClassifierModel)
+from .utils import load_pretrained_model_or_tokenizer
 
 LOSSES = {'bce': F.binary_cross_entropy,
           'bce_logits': F.binary_cross_entropy_with_logits,
@@ -47,9 +49,13 @@ TASKS = {
         'model': SequenceClassifierModel,
         'dataset': None
     },
-    'sentiment-analysis': {
+    # 'sentiment-analysis': {
+    #     'model': SequenceClassifierModel,
+    #     'dataset': SentimentDataset
+    # },
+    'aspect-sentiment': {
         'model': SequenceClassifierModel,
-        'dataset': SentimentDataset
+        'dataset': SemEvalXMLDataset
     },
     'ner': {
         'model': TokenClassifierModel,
@@ -73,7 +79,7 @@ class Pipeline(BaseModule):
                  test_path: Optional[str] = None,
                  bert_base: str = 'bert',
                  task: Literal[tuple(TASKS.keys())] = 'classification',
-                 tokenizer: Optional[Union[PreTrainedTokenizer]] = None,
+                 tokenizer: Optional[Union[PreTrainedTokenizer, PreTrainedTokenizerFast]] = None,
                  train_split_ratio: float = 0.7,
                  train_batchsize: int = 32,
                  val_batchsize: int = 32,
@@ -112,18 +118,20 @@ class Pipeline(BaseModule):
 
         self.freeze_bert = freeze_bert
         bert_args = BERT_BASE[bert_base]
-        self.pretrained_model_name = bert_args['pretrained_model_name']
-        self.bert_base = bert_args['model'].from_pretrained(self.pretrained_model_name)
+
+        pretrained_model_name = bert_args['pretrained_model_name']
+        self.bert_base = load_pretrained_model_or_tokenizer(
+            bert_args['model'], pretrained_model_name)
 
         if tokenizer:
             self.tokenizer = tokenizer
         else:
-            self.tokenizer = bert_args['tokenizer']\
-                .from_pretrained(self.pretrained_model_name)
+            self.tokenizer = load_pretrained_model_or_tokenizer(
+                bert_args['tokenizer'], pretrained_model_name)
 
         task_args = TASKS[task]
         self.classifier = task_args['model'](**model_args)
-        self.dataset = task_args['dataset']
+        self._dataset = task_args['dataset']
 
         self.save_hyperparameters()
 
@@ -140,8 +148,8 @@ class Pipeline(BaseModule):
         return parser
 
     def prepare_data(self):
-        self.train_data = self.dataset(self.data_path, **self._dataset_args)
-        self.train_data.tokenizer = self.tokenizer
+        self.train_data = self._dataset(self.data_path, **self._dataset_args)
+        # self.train_data.tokenizer = self.tokenizer
         len_ = len(self.train_data)
         train_len = int(len_ * self.train_split_ratio)
         val_len = len_ - train_len
@@ -155,12 +163,15 @@ class Pipeline(BaseModule):
 
     def val_dataloader(self):
         if self.val_data:
-            loader = DataLoader(self.val_data, batch_size=self.train_batchsize,
-                                shuffle=True, num_workers=self.num_workers)
-            return loader
+            return DataLoader(self.val_data, batch_size=self.train_batchsize,
+                              shuffle=False, num_workers=self.num_workers)
 
     def test_dataloader(self):
-        return self.val_dataloader()
+        if not self.test_path:
+            return self.val_dataloader()
+        self.test_data = self._dataset(self.test_path, **self._dataset_args)
+        return DataLoader(self.test_data, batch_size=self.train_batchsize,
+                          shuffle=False, num_workers=self.num_workers)
 
     def configure_optimizers(self):
         params = []
@@ -215,7 +226,6 @@ class Pipeline(BaseModule):
             logs = {
                 'Loss/val_loss': loss,
                 'Accuracy/val_acc': acc,
-                'learning_rate': self.trainer.lightning_optimizers[0].param_groups[0]['lr']
             }
             self.log_dict(logs, prog_bar=True)
 

@@ -22,3 +22,9 @@ args.val_batchsize = 16
 args.test_batchsize = 16
 args.debug = False
 args.git_tag = True
+args.gradient_clip_val = 1.0
+
+args.gpus = 1
+args.weights_summary = 'full'
+args.profiler = True
+# args.early_stop_callback = False

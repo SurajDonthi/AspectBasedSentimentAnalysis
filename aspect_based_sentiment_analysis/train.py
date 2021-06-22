@@ -3,21 +3,27 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
-from pytorch_lightning.loggers.test_tube import TestTubeLogger
+from pytorch_lightning.callbacks import (EarlyStopping, GPUStatsMonitor,
+                                         LearningRateMonitor, ModelCheckpoint)
+from pytorch_lightning.loggers import CometLogger, TestTubeLogger
 
-from pipeline import Pipeline
-from tuner import args as params
-from utils import save_args
+from .pipeline import Pipeline
+from .tuner import args as params
+from .utils import save_args
 
 
 def main(args):
     tt_logger = TestTubeLogger(save_dir=args.log_path, name="",
-                               description=args.description, debug=False,
+                               description=args.description, debug=args.debug,
                                create_git_tag=args.git_tag)
     tt_logger.experiment
 
     log_dir = Path(tt_logger.save_dir) / f"version_{tt_logger.version}"
+
+    comet_logger = CometLogger(api_key='afAkCM1UJSi12AtcUYJPLdK9v',
+                               project_name='AspectBasedSentimentAnalysis',
+                               experiment_name='SentencePair' + f'_v{tt_logger.version}',
+                               offline=args.debug)
 
     checkpoint_dir = log_dir / "checkpoints"
     os.makedirs(checkpoint_dir, exist_ok=True)
@@ -28,18 +34,14 @@ def main(args):
                                      save_top_k=10,
                                      period=5
                                      )
+    early_stop_callback = EarlyStopping()
 
     model_pipeline = Pipeline.from_argparse_args(args)
 
     save_args(args, log_dir)
 
-    trainer = Trainer.from_argparse_args(args, logger=tt_logger,
+    trainer = Trainer.from_argparse_args(args, logger=[tt_logger, comet_logger],
                                          checkpoint_callback=chkpt_callback,
-                                         gradient_clip_val=1.0,
-                                         #   early_stop_callback=False,
-                                         weights_summary='full',
-                                         gpus=1,
-                                         profiler=True
                                          )
 
     trainer.fit(model_pipeline)
