@@ -46,6 +46,8 @@ class SemEvalXMLDataset(Dataset):
         self.aspects = self.df['entities.term']
         self.labels = self.df['entities.polarity'].codes
 
+        self.tokenizer = tokenizer
+
     def load_xml_data_as_json(self, path: str):
         tree = ET.parse(path)
         root = tree.getroot()
@@ -140,7 +142,7 @@ class SemEvalDataModule(BaseDataModule):
         self.train_data = SemEvalXMLDataset(train_path, tokenizer, encoder_args)
         self.test_data = SemEvalXMLDataset(test_path, tokenizer, encoder_args)
 
-        val_len = len(self.train_data) * train_val_split
+        val_len = int(len(self.train_data) * train_val_split)
         train_len = len(self.train_data) - val_len
         self.train_data, self.val_data = random_split(self.train_data, [train_len, val_len])
 

@@ -70,6 +70,7 @@ class Pipeline(BaseModule):
 
     def __init__(self,
                  data_path: str,
+                 test_path: Optional[str] = None,
                  bert_base: str = 'bert',
                  task: Literal[tuple(TASKS.keys())] = 'classification',
                  tokenizer: Optional[Union[PreTrainedTokenizer]] = None,
@@ -81,27 +82,29 @@ class Pipeline(BaseModule):
                  lr: float = 5e-5,
                  criterion: Literal[tuple(LOSSES.keys())] = 'cross_entropy',
                  freeze_bert: bool = False,
-                 data_args: dict = dict(max_len=512,
-                                        read_args=dict(nrows=3500,
-                                                       usecols=['review_body', 'sentiment'])
-                                        ),
+                 dataset_args: dict = dict(),
                  model_args: dict = dict(dropout=0.3),
                  optim_args: dict = dict(eps=1e-8),
-                 *args, **kwargs):
+                 encoder_args: dict = dict(),
+                 * args, **kwargs):
         super().__init__()
 
         self.data_path = Path(data_path)
+        self.test_path = Path(test_path)
 
         if not self.data_path.exists():
-            raise Exception(
-                f"Path '{self.data_path.absolute().as_posix()}' does not exist!")
+            raise FileNotFoundError(
+                f"File '{self.data_path.absolute().as_posix()}' does not exist!")
+        if not self.test_path.exists():
+            raise FileNotFoundError(
+                f"File '{self.data_path.absolute().as_posix()}' does not exist!")
 
         self.train_split_ratio = train_split_ratio
         self.train_batchsize = train_batchsize
         self.test_batchsize = test_batchsize
         self.val_batchsize = val_batchsize
         self.num_workers = num_workers
-        self._data_args = data_args
+        self._dataset_args = dataset_args.update(dict(encoder_args=encoder_args))
 
         self.criterion = LOSSES[criterion]
         self.lr = lr
@@ -111,6 +114,7 @@ class Pipeline(BaseModule):
         bert_args = BERT_BASE[bert_base]
         self.pretrained_model_name = bert_args['pretrained_model_name']
         self.bert_base = bert_args['model'].from_pretrained(self.pretrained_model_name)
+
         if tokenizer:
             self.tokenizer = tokenizer
         else:
@@ -119,7 +123,7 @@ class Pipeline(BaseModule):
 
         task_args = TASKS[task]
         self.classifier = task_args['model'](**model_args)
-        self.Dataset = task_args['dataset']
+        self.dataset = task_args['dataset']
 
         self.save_hyperparameters()
 
@@ -136,8 +140,8 @@ class Pipeline(BaseModule):
         return parser
 
     def prepare_data(self):
-        self.train_data = self.Dataset(self.data_path, **self._data_args)
-        self.train_data._tokenizer = self.tokenizer
+        self.train_data = self.dataset(self.data_path, **self._dataset_args)
+        self.train_data.tokenizer = self.tokenizer
         len_ = len(self.train_data)
         train_len = int(len_ * self.train_split_ratio)
         val_len = len_ - train_len
