@@ -33,10 +33,11 @@ class SemEvalXMLDataset(Dataset):
         # filters
         not_null_entities = self.df['entities.term'].notnull()
         not_conflict = self.df['entities.polarity'] != 'conflict'
-        self.df = self.df[not_null_entities & not_conflict]
+        self.df = self.df[not_null_entities & not_conflict].reset_index(drop=True)
 
-        self.df['entities.polarity'] = pd.Categorical(self.df['entities.polarity'], categories=[
-            'negative', 'neutral', 'positive', 'conflict'])
+        self.df['entities.polarity'] = pd.Categorical(
+            self.df['entities.polarity'],
+            categories=['negative', 'neutral', 'positive'])
 
         self.texts = self.df['text']
         self.aspects = self.df['entities.term']
@@ -111,4 +112,4 @@ class SemEvalXMLDataset(Dataset):
         return {
             'input_ids': th.squeeze(th.tensor(encodings['input_ids'], dtype=th.long)),
             'attention_mask': th.squeeze(th.tensor(encodings['attention_mask'])),
-            'target':}
+            'target': target}
