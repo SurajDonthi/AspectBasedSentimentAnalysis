@@ -1,18 +1,18 @@
-name: NLPDev
+name: PytorchLightningEnv
 channels:
   - conda-forge
   - pytorch
-  - stanfordnlp
+  # - stanfordnlp
   # - huggingface   # Do not use this channel. Does not download source code & linting is not available
   - defaults
 dependencies:
-  - python=3.7.9
-  - pip=21.0.1
-  - pytorch::pytorch=1.7.1
+  - python
+  - pip
+  - pytorch::pytorch
   # - pytorch::cpuonly=1.0
   - cudatoolkit=10.2
   # - pytorch::torchvision
-  # - pytorch::torchtext=0.8.1
+  - pytorch::torchtext=0.8.1
   - tensorboard=2.4.1
   - conda-forge::pytorch-lightning=1.2.0
   - numpy=1.19.5
@@ -20,13 +20,13 @@ dependencies:
   - scikit-learn=0.24.1
   - seaborn=0.11.1
   - nltk=3.4.4
-  - gensim=3.8.3
-  - stanfordnlp::stanza=1.2.0
+  # - gensim=3.8.3
+  # - stanfordnlp::stanza=1.2.0
   - conda-forge::transformers=4.3.3
   - autopep8=1.5.5
   - flake8=3.8.4
-  - conda-forge::beautifulsoup4=4.9.3
-  - conda-forge::selenium=3.141.0
+  # - conda-forge::beautifulsoup4=4.9.3
+  # - conda-forge::selenium=3.141.0
   - conda-forge::loguru=0.5.3
   - conda-forge::fastapi=0.63.0
   - conda-forge::uvicorn=0.13.4
@@ -34,18 +34,18 @@ dependencies:
   - jupyter
   - jedi=0.17.2
   # - traceback2=1.4.0
-  - lxml=4.6.3
-  - xlrd=2.0.1
-  - openpyxl=3.0.7
+  # - lxml=4.6.3
+  # - xlrd=2.0.1
+  # - openpyxl=3.0.7
   - pip:
-      - benepar==0.2.0
-      - sentence-transformers==1.0.3
-      - doccano==1.2.4
-      - doccano-transformer==1.0.2
-      - fuzzywuzzy[speedup]==0.18.0
-      - flair==0.8.0
-      - textblob==0.15.3
-      - rake-nltk==1.0.4
+      # - benepar==0.2.0
+      # - sentence-transformers==1.0.3
+      # - doccano==1.2.4
+      # - doccano-transformer==1.0.2
+      # - fuzzywuzzy[speedup]==0.18.0
+      # - flair==0.8.0
+      # - textblob==0.15.3
+      # - rake-nltk==1.0.4
       - test-tube
       # - gpustat
       # - windows-curses
