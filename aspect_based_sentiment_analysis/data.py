@@ -1,16 +1,18 @@
 import json
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import flat_table
 import pandas as pd
 import torch as th
 from torch.utils.data import DataLoader, random_split
 from torch.utils.data.dataset import Dataset
-from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
+from transformers import (BertTokenizer, PreTrainedTokenizer,
+                          PreTrainedTokenizerFast)
 
-from .base import BaseDataset
+from .base import BaseDataModule, BaseDataset
+from .utils import DirectoryNotFoundError, IsNotADirectoryError
 
 
 class SemEvalXMLDataset(Dataset):
@@ -18,9 +20,10 @@ class SemEvalXMLDataset(Dataset):
     def __init__(
         self,
         file_path: str,
-        tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
-        encoder_args={},
-        reader_args: dict = dict(),
+        tokenizer: Optional[Union[PreTrainedTokenizer,
+                                  PreTrainedTokenizerFast, str]] = 'bert-base-cased',
+        encoder_args: Optional[dict] = dict(),
+        # reader_args: Optional[dict] = dict(),
         **kwargs
     ):
         super().__init__()
@@ -113,3 +116,52 @@ class SemEvalXMLDataset(Dataset):
             'input_ids': th.squeeze(th.tensor(encodings['input_ids'], dtype=th.long)),
             'attention_mask': th.squeeze(th.tensor(encodings['attention_mask'])),
             'target': target}
+
+
+class SemEvalDataModule(BaseDataModule):
+    def __init__(
+        self,
+        train_path: str,
+        test_path: Optional[str],
+        train_val_split: float = 0.2,
+        tokenizer: Optional[Union[PreTrainedTokenizer,
+                                  PreTrainedTokenizerFast, str]] = 'bert-based-cased',
+        encoder_args: Optional[dict] = dict(),
+        train_bath_size: int = 16,
+        val_bath_size: int = 16,
+        test_bath_size: int = 16,
+        # reader_args: Optional[dict] = dict(),
+        **kwargs
+    ):
+        super().__init__()
+        train_path = Path(train_path)
+        test_path = Path(test_path)
+
+        self.train_data = SemEvalXMLDataset(train_path, tokenizer, encoder_args)
+        self.test_data = SemEvalXMLDataset(test_path, tokenizer, encoder_args)
+
+        val_len = len(self.train_data) * train_val_split
+        train_len = len(self.train_data) - val_len
+        self.train_data, self.val_data = random_split(self.train_data, [train_len, val_len])
+
+        self.train_bath_size = train_bath_size
+        self.val_bath_size = val_bath_size
+        self.test_bath_size = test_bath_size
+
+    def train_dataloader(self) -> DataLoader:
+        pin_memory = th.has_cuda
+        return DataLoader(self.train_data, self.train_batch_size,
+                          shuffle=True, pin_memory=pin_memory,
+                          num_workers=self.num_workers)
+
+    def val_dataloader(self) -> DataLoader:
+        pin_memory = th.has_cuda
+        return DataLoader(self.val_data, self.val_batch_size,
+                          shuffle=True, pin_memory=pin_memory,
+                          num_workers=self.num_workers)
+
+    def test_dataloader(self) -> DataLoader:
+        pin_memory = th.has_cuda
+        return DataLoader(self.test_data, self.test_batch_size,
+                          shuffle=True, pin_memory=pin_memory,
+                          num_workers=self.num_workers)

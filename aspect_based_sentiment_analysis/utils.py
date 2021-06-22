@@ -29,3 +29,13 @@ def update_args(func, args):
     default_args.update(args)
 
     return default_args
+
+
+class DirectoryNotFoundError(OSError):
+    """
+    Folder not found.
+    """
+
+
+class IsNotADirectoryError(OSError):
+    "Not a folder."
