@@ -38,8 +38,9 @@ def main(args):
 
     save_args(args, log_dir)
 
-    trainer = Trainer.from_argparse_args(args, loggers=loggers,
-                                         checkpoint_callback=chkpt_callback, 
+    trainer = Trainer.from_argparse_args(args,
+                                         # loggers=loggers,
+                                         checkpoint_callback=chkpt_callback,
                                          early_stop_callback=early_stop_callback
                                          )
 

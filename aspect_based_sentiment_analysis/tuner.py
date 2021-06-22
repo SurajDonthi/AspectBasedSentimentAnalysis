@@ -4,19 +4,26 @@ from argparse import Namespace
 args = Namespace()
 
 args.description = "Training with Amazon outdoors data for Sentiment Analysis"
-args.task = "sentiment-analysis"
+args.task = "aspect-sentiment"
 args.log_path = "./logs"
 args.max_epochs = 20
-args.data_path = "./data/amazon_outdoors/amazon_reviews_us_Outdoors_v1_00_rebalanced.csv.gz"
-args.data_args = dict(max_len=512,
-                      read_args=dict(nrows=7500,
-                                     usecols=['review_body', 'sentiment'])
-                      )
+args.data_path = "./data/Restaurants_Train.xml"
+args.test_path = "./data/restaurants-trial.xml"
+args.dataset_args = dict()
+args.encoder_args = dict(
+    max_length=512,
+    add_special_tokens=True,
+    return_token_type_ids=False,
+    return_attention_mask=True,
+    padding='max_length',
+    truncation=True,
+    return_tensors='pt'
+)
 args.lr = 1e-3
 args.train_split_ratio = 0.7
-# args.limit_train_batches = 0.01
-# args.limit_val_batches = 0.01
-# args.limit_test_batches = 0.01
+args.limit_train_batches = 0.01
+args.limit_val_batches = 0.01
+args.limit_test_batches = 0.01
 args.train_batchsize = 16
 args.val_batchsize = 16
 args.test_batchsize = 16

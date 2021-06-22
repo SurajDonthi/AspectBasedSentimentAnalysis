@@ -5,7 +5,7 @@ from typing import Optional, Union
 import torch
 import torch.nn.functional as F
 from pytorch_lightning.metrics.functional.classification import (
-    f1_score, multiclass_auroc, precision, precision_recall, recall)
+    multiclass_auroc, precision, precision_recall, recall)
 from pytorch_lightning.metrics.functional.confusion_matrix import \
     confusion_matrix
 from pytorch_lightning.utilities import parsing
@@ -78,26 +78,28 @@ TASKS = {
 
 class Pipeline(BaseModule):
 
-    def __init__(self,
-                 data_path: str,
-                 test_path: Optional[str] = None,
-                 bert_base: str = 'bert',
-                 task: Literal[tuple(TASKS.keys())] = 'classification',
-                 tokenizer: Optional[Union[PreTrainedTokenizer, PreTrainedTokenizerFast]] = None,
-                 train_split_ratio: float = 0.7,
-                 train_batchsize: int = 32,
-                 val_batchsize: int = 32,
-                 test_batchsize: int = 32,
-                 num_workers: int = 4,
-                 lr: float = 5e-5,
-                 criterion: Literal[tuple(LOSSES.keys())] = 'cross_entropy',
-                 freeze_bert: bool = False,
-                 dataset_args: dict = dict(),
-                 encoder_args: dict = dict(),
-                 model_args: dict = dict(dropout=0.3),
-                 optim_args: dict = dict(eps=1e-8),
-                 #  scheduler_args: dict = dict(),
-                 * args, **kwargs):
+    def __init__(
+        self,
+        data_path: str,
+        test_path: Optional[str] = None,
+        bert_base: str = 'bert',
+        task: Literal[tuple(TASKS.keys())] = 'classification',
+        tokenizer: Optional[Union[PreTrainedTokenizer, PreTrainedTokenizerFast]] = None,
+        train_split_ratio: float = 0.7,
+        train_batchsize: int = 32,
+        val_batchsize: int = 32,
+        test_batchsize: int = 32,
+        num_workers: int = 4,
+        lr: float = 5e-5,
+        criterion: Literal[tuple(LOSSES.keys())] = 'cross_entropy',
+        freeze_bert: bool = False,
+        dataset_args: dict = dict(),
+        encoder_args: dict = dict(),
+        model_args: dict = dict(dropout=0.3),
+        optim_args: dict = dict(eps=1e-8),
+        #  scheduler_args: dict = dict(),
+        * args, **kwargs
+    ):
         super().__init__()
 
         self.data_path = Path(data_path)
@@ -143,17 +145,17 @@ class Pipeline(BaseModule):
     @staticmethod
     def add_model_specific_args(parent_parser):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument('-des', '--description', required=False, type=str)
-        parser.add_argument('-lp', '--log_path', type=str,
+        parser.add_argument('--description', required=False, type=str)
+        parser.add_argument('--log_path', type=str,
                             default='./logs')
-        parser.add_argument('-gt', '--git_tag', required=False, const=False,
+        parser.add_argument('--git_tag', required=False, const=False,
                             type=parsing.str_to_bool, nargs='?')
         parser.add_argument('--debug', required=False, const=False,
                             nargs='?', type=parsing.str_to_bool)
         return parser
 
     def prepare_data(self):
-        self.train_data = self._dataset(self.data_path, **self._dataset_args)
+        self.train_data = self._dataset(self.data_path, self.tokenizer, **self._dataset_args)
         # self.train_data.tokenizer = self.tokenizer
         len_ = len(self.train_data)
         train_len = int(len_ * self.train_split_ratio)
@@ -174,7 +176,7 @@ class Pipeline(BaseModule):
     def test_dataloader(self):
         if not self.test_path:
             return self.val_dataloader()
-        self.test_data = self._dataset(self.test_path, **self._dataset_args)
+        self.test_data = self._dataset(self.test_path, self.tokenizer, **self._dataset_args)
         return DataLoader(self.test_data, batch_size=self.train_batchsize,
                           shuffle=False, num_workers=self.num_workers)
 

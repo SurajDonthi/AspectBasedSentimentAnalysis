@@ -4,6 +4,7 @@ channels:
   - pytorch
   # - stanfordnlp
   # - huggingface   # Do not use this channel. Does not download source code & linting is not available
+  - comet_ml
   - defaults
 dependencies:
   - python
@@ -14,6 +15,7 @@ dependencies:
   # - pytorch::torchvision
   - pytorch::torchtext=0.8.1
   - tensorboard=2.4.1
+  - comet_ml
   - conda-forge::pytorch-lightning=1.2.0
   - numpy=1.19.5
   - pandas=1.2.2

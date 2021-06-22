@@ -47,6 +47,7 @@ class SemEvalXMLDataset(Dataset):
         self.labels = self.df['entities.polarity'].codes
 
         self.tokenizer = tokenizer
+        self._encoder_args = encoder_args
 
     def load_xml_data_as_json(self, path: str):
         tree = ET.parse(path)
@@ -105,13 +106,7 @@ class SemEvalXMLDataset(Dataset):
         encodings = self.tokenizer.encode_plus(
             self.texts[index],
             self.aspects[index],
-            max_length=512,
-            add_special_tokens=True,
-            return_token_type_ids=False,
-            return_attention_mask=True,
-            padding='max_length',
-            truncation=True,
-            return_tensors='pt',
+            **self._encoder_args
         )
 
         return {
