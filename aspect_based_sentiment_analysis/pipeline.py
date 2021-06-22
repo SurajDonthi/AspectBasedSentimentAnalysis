@@ -71,6 +71,10 @@ TASKS = {
     },
 }
 
+# SCHEDULERS = {
+#     'linear_with_warmup': get_linear_schedule_with_warmup
+# }
+
 
 class Pipeline(BaseModule):
 
@@ -89,9 +93,10 @@ class Pipeline(BaseModule):
                  criterion: Literal[tuple(LOSSES.keys())] = 'cross_entropy',
                  freeze_bert: bool = False,
                  dataset_args: dict = dict(),
+                 encoder_args: dict = dict(),
                  model_args: dict = dict(dropout=0.3),
                  optim_args: dict = dict(eps=1e-8),
-                 encoder_args: dict = dict(),
+                 #  scheduler_args: dict = dict(),
                  * args, **kwargs):
         super().__init__()
 
@@ -143,8 +148,8 @@ class Pipeline(BaseModule):
                             default='./logs')
         parser.add_argument('-gt', '--git_tag', required=False, const=False,
                             type=parsing.str_to_bool, nargs='?')
-        parser.add_argument('--debug', required=False, const=False, nargs='?',
-                            type=parsing.str_to_bool)
+        parser.add_argument('--debug', required=False, const=False,
+                            nargs='?', type=parsing.str_to_bool)
         return parser
 
     def prepare_data(self):
@@ -181,12 +186,11 @@ class Pipeline(BaseModule):
 
         optim = AdamW(params,
                       lr=self.hparams.lr, **self.optim_args)
-        # scheduler = get_linear_schedule_with_warmup(optim,
-        #                                             num_warmup_steps=0,  # Default value
-        #                                             num_training_steps=self.trainer.max_epochs
-        #                                             )
-        return [optim] \
-            # , [scheduler]
+        scheduler = get_linear_schedule_with_warmup(optim,
+                                                    num_warmup_steps=self.trainer.num_steps,  # Default value
+                                                    num_training_steps=self.trainer.max_epochs
+                                                    )
+        return [optim], [scheduler]
 
     def forward(self, batch):
         input_ids, attention_mask = batch
