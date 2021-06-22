@@ -13,17 +13,15 @@ from .utils import save_args
 
 
 def main(args):
-    tt_logger = TestTubeLogger(save_dir=args.log_path, name="",
-                               description=args.description, debug=args.debug,
-                               create_git_tag=args.git_tag)
-    tt_logger.experiment
-
-    log_dir = Path(tt_logger.save_dir) / f"version_{tt_logger.version}"
-
-    comet_logger = CometLogger(api_key='afAkCM1UJSi12AtcUYJPLdK9v',
-                               project_name='AspectBasedSentimentAnalysis',
-                               experiment_name='SentencePair' + f'_v{tt_logger.version}',
-                               offline=args.debug)
+    loggers = [TestTubeLogger(save_dir=args.log_path, name="",
+                              description=args.description, debug=args.debug,
+                              create_git_tag=args.git_tag)]
+    loggers[0].experiment
+    log_dir = Path(loggers[0].save_dir) / f"version_{loggers[0].version}"
+    loggers += [CometLogger(api_key='afAkCM1UJSi12AtcUYJPLdK9v',
+                            project_name='AspectBasedSentimentAnalysis',
+                            experiment_name='SentencePair' + f'_v{loggers[0].version}',
+                            offline=args.debug)]
 
     checkpoint_dir = log_dir / "checkpoints"
     os.makedirs(checkpoint_dir, exist_ok=True)
@@ -40,8 +38,9 @@ def main(args):
 
     save_args(args, log_dir)
 
-    trainer = Trainer.from_argparse_args(args, logger=[tt_logger, comet_logger],
-                                         checkpoint_callback=chkpt_callback,
+    trainer = Trainer.from_argparse_args(args, loggers=loggers,
+                                         checkpoint_callback=chkpt_callback, 
+                                         early_stop_callback=early_stop_callback
                                          )
 
     trainer.fit(model_pipeline)
