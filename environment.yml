@@ -35,6 +35,7 @@ dependencies:
   - conda-forge::nb_conda_kernels
   - ipykernel
   - jedi=0.17.2
+  - pytest
   # - traceback2=1.4.0
   # - lxml=4.6.3
   # - xlrd=2.0.1
