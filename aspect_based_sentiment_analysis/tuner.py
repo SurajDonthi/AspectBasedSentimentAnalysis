@@ -32,7 +32,8 @@ args.debug = True
 args.git_tag = True
 args.gradient_clip_val = 1.0
 
-args.gpus = 1
+# args.gpus = 1
+# args.log_gpu_memory = 'min_max'
 args.weights_summary = 'full'
-args.profiler = True
+args.profiler = 'simple'
 # args.early_stop_callback = False

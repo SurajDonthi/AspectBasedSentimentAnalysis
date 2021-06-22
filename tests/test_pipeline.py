@@ -6,5 +6,5 @@ from aspect_based_sentiment_analysis.tuner import args
 from pytorch_lightning import Trainer
 
 
-def test_sanity():
+def test_train():
     main(args)

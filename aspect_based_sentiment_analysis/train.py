@@ -45,7 +45,12 @@ def main(args):
         save_top_k=10,
         period=5
     )
-    early_stop_callback = EarlyStopping()
+    early_stop_callback = EarlyStopping(
+        monitor='Loss/val_loss',
+        mode='min'
+    )
+    gpu_monitor = GPUStatsMonitor(True, True, True, True, True)
+    lr_montior = LearningRateMonitor()
 
     model_pipeline = Pipeline.from_argparse_args(args)
 
@@ -53,7 +58,9 @@ def main(args):
 
     trainer = Trainer.from_argparse_args(args,
                                          logger=loggers,
-                                         callbacks=[early_stop_callback, chkpt_callback]
+                                         callbacks=[early_stop_callback,
+                                                    chkpt_callback, gpu_monitor,
+                                                    lr_montior]
                                          )
 
     trainer.fit(model_pipeline)
