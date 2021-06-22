@@ -21,9 +21,10 @@ args.encoder_args = dict(
 )
 args.lr = 1e-3
 args.train_split_ratio = 0.7
-args.limit_train_batches = 0.01
-args.limit_val_batches = 0.01
-args.limit_test_batches = 0.01
+# args.limit_train_batches = 0.01
+# args.limit_val_batches = 0.01
+# args.limit_test_batches = 0.01
+args.fast_dev_run = 10
 args.train_batchsize = 16
 args.val_batchsize = 16
 args.test_batchsize = 16

@@ -32,15 +32,15 @@ LOSSES = {'bce': F.binary_cross_entropy,
 BERT_BASE = {
     'bert': {'model': BertModel,
              'tokenizer': BertTokenizer,
-             'pretrained_model_name': 'bert-base-cased',
+             'pretrained_model_name': '.weights/bert-base-cased',
              },
     'distil': {'model': DistilBertModel,
                'tokenizer': DistilBertTokenizer,
-               'pretrained_model_name': 'distilbert-base-multilingual-cased'
+               'pretrained_model_name': '.weights/distilbert-base-multilingual-cased'
                },
     'squeeze': {'model': SqueezeBertModel,
                 'tokenizer': SqueezeBertTokenizer,
-                'pretrained_model_name': 'squeezebert/squeezebert-uncased'
+                'pretrained_model_name': '.weights/squeezebert/squeezebert-uncased'
                 }
 }
 
@@ -126,9 +126,9 @@ class Pipeline(BaseModule):
         self.freeze_bert = freeze_bert
         bert_args = BERT_BASE[bert_base]
 
-        pretrained_model_name = bert_args['pretrained_model_name']
+        pretrained_model_name = Path(bert_args['pretrained_model_name'])
         self.bert_base = load_pretrained_model_or_tokenizer(
-            bert_args['model'], pretrained_model_name)
+            bert_args['model'], (pretrained_model_name))
 
         if tokenizer:
             self.tokenizer = tokenizer

@@ -13,34 +13,38 @@ from .utils import save_args
 
 
 def main(args):
-    if not Path(args.log_path):
+    if not Path(args.log_path).exists():
         os.makedirs(args.log_path)
         version = 0
     else:
         version = int(os.listdir(args.log_path)[-1][-2:])
     save_dir = Path(args.log_path) / f'version_{version:02d}'
-    loggers = [TestTubeLogger(save_dir=save_dir, name="",
-                              description=args.description, debug=args.debug,
-                              create_git_tag=args.git_tag, version=version,
-                              log_graph=True)
-               ]
+    loggers = [TestTubeLogger(
+        save_dir=save_dir, name="",
+        description=args.description, debug=args.debug,
+        create_git_tag=args.git_tag, version=version,
+        log_graph=True
+    )]
     loggers[0].experiment
     loggers += [CometLogger(
         api_key='afAkCM1UJSi12AtcUYJPLdK9v',
         save_dir=save_dir,
         project_name='AspectBasedSentimentAnalysis',
-        experiment_name='SentencePair' + f'_v{loggers[0].version}',
-        offline=not args.debug)]
+        experiment_name='SentencePair' + f'_v{version}',
+        offline=args.debug, version=version,
+        log_graph=True
+    )]
 
     checkpoint_dir = save_dir / "checkpoints"
     os.makedirs(checkpoint_dir, exist_ok=True)
-    chkpt_callback = ModelCheckpoint(checkpoint_dir,
-                                     monitor='Loss/val_loss',
-                                     save_last=True,
-                                     mode='min',
-                                     save_top_k=10,
-                                     period=5
-                                     )
+    chkpt_callback = ModelCheckpoint(
+        dirpath=checkpoint_dir,
+        monitor='Loss/val_loss',
+        save_last=True,
+        mode='min',
+        save_top_k=10,
+        period=5
+    )
     early_stop_callback = EarlyStopping()
 
     model_pipeline = Pipeline.from_argparse_args(args)
@@ -48,9 +52,8 @@ def main(args):
     save_args(args, save_dir)
 
     trainer = Trainer.from_argparse_args(args,
-                                         # loggers=loggers,
-                                         checkpoint_callback=chkpt_callback,
-                                         early_stop_callback=early_stop_callback
+                                         logger=loggers,
+                                         callbacks=[early_stop_callback, chkpt_callback]
                                          )
 
     trainer.fit(model_pipeline)
