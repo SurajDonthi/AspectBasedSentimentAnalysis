@@ -13,17 +13,26 @@ from .utils import save_args
 
 
 def main(args):
-    loggers = [TestTubeLogger(save_dir=args.log_path, name="",
+    if not Path(args.log_path):
+        os.makedirs(args.log_path)
+        version = 0
+    else:
+        version = int(os.listdir(args.log_path)[-1][-2:])
+    save_dir = Path(args.log_path) / f'version_{version:02d}'
+    loggers = [TestTubeLogger(save_dir=save_dir, name="",
                               description=args.description, debug=args.debug,
-                              create_git_tag=args.git_tag)]
+                              create_git_tag=args.git_tag, version=version,
+                              log_graph=True)
+               ]
     loggers[0].experiment
-    log_dir = Path(loggers[0].save_dir) / f"version_{loggers[0].version}"
-    loggers += [CometLogger(api_key='afAkCM1UJSi12AtcUYJPLdK9v',
-                            project_name='AspectBasedSentimentAnalysis',
-                            experiment_name='SentencePair' + f'_v{loggers[0].version}',
-                            offline=args.debug)]
+    loggers += [CometLogger(
+        api_key='afAkCM1UJSi12AtcUYJPLdK9v',
+        save_dir=save_dir,
+        project_name='AspectBasedSentimentAnalysis',
+        experiment_name='SentencePair' + f'_v{loggers[0].version}',
+        offline=not args.debug)]
 
-    checkpoint_dir = log_dir / "checkpoints"
+    checkpoint_dir = save_dir / "checkpoints"
     os.makedirs(checkpoint_dir, exist_ok=True)
     chkpt_callback = ModelCheckpoint(checkpoint_dir,
                                      monitor='Loss/val_loss',
@@ -36,7 +45,7 @@ def main(args):
 
     model_pipeline = Pipeline.from_argparse_args(args)
 
-    save_args(args, log_dir)
+    save_args(args, save_dir)
 
     trainer = Trainer.from_argparse_args(args,
                                          # loggers=loggers,

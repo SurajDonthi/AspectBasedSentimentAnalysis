@@ -3,7 +3,7 @@ from argparse import Namespace
 
 args = Namespace()
 
-args.description = "Training with Amazon outdoors data for Sentiment Analysis"
+args.description = "Training with Restaurant Reviews data for Aspect Sentiment Analysis"
 args.task = "aspect-sentiment"
 args.log_path = "./logs"
 args.max_epochs = 20
