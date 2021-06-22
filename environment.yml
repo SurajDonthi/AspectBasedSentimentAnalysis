@@ -32,6 +32,8 @@ dependencies:
   - conda-forge::uvicorn=0.13.4
   - conda-forge::spacy=2.2.4
   - jupyter
+  - conda-forge::nb_conda_kernels
+  - ipykernel
   - jedi=0.17.2
   # - traceback2=1.4.0
   # - lxml=4.6.3
