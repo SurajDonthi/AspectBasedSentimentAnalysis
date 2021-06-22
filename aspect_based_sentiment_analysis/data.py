@@ -7,12 +7,13 @@ import flat_table
 import pandas as pd
 import torch as th
 from torch.utils.data import DataLoader, random_split
+from torch.utils.data.dataset import Dataset
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 
 from .base import BaseDataset
 
 
-class SemEvalXMLDataset(BaseDataset):
+class SemEvalXMLDataset(Dataset):
 
     def __init__(
         self,
@@ -22,14 +23,26 @@ class SemEvalXMLDataset(BaseDataset):
         reader_args: dict = dict(),
         **kwargs
     ):
+        super().__init__()
+
         file_path = Path(file_path)
         if not file_path.exists():
             raise FileNotFoundError(f"The file {file_path} does not exist!!")
-        df = self.load_xml_data()  # To Implement
-        input, labels = self.df.iloc[:, 0], self.df.iloc[:, 1]
-        super().__init__(input, labels, tokenizer, encoder_args)
+        self.df = self.load_sem_eval_data(file_path)
 
-    def load_xml_data(self, path):
+        # filters
+        not_null_entities = self.df['entities.term'].notnull()
+        not_conflict = self.df['entities.polarity'] != 'conflict'
+        self.df = self.df[not_null_entities & not_conflict]
+
+        self.df['entities.polarity'] = pd.Categorical(self.df['entities.polarity'], categories=[
+            'negative', 'neutral', 'positive', 'conflict'])
+
+        self.texts = self.df['text']
+        self.aspects = self.df['entities.term']
+        self.labels = self.df['entities.polarity'].codes
+
+    def load_xml_data_as_json(self, path: str):
         tree = ET.parse(path)
         root = tree.getroot()
 
@@ -69,9 +82,13 @@ class SemEvalXMLDataset(BaseDataset):
 
         return text_dataset
 
-    def load_json_as_df(self, json_data):
+    def load_json_as_df(self, json_data: dict):
         df = pd.read_json(json.dumps(json_data))
         df = flat_table.normalize(df).drop('index', axis=1)
+        return df
+
+    def load_sem_eval_data(self, path: str):
+        return self.load_json_as_df(self.load_xml_data_as_json(path))
 
     def __len__(self):
         return len(self.df)
@@ -80,7 +97,8 @@ class SemEvalXMLDataset(BaseDataset):
         target = self.labels[index]
 
         encodings = self.tokenizer.encode_plus(
-            self.text[index],
+            self.texts[index],
+            self.aspects[index],
             max_length=512,
             add_special_tokens=True,
             return_token_type_ids=False,
@@ -93,4 +111,4 @@ class SemEvalXMLDataset(BaseDataset):
         return {
             'input_ids': th.squeeze(th.tensor(encodings['input_ids'], dtype=th.long)),
             'attention_mask': th.squeeze(th.tensor(encodings['attention_mask'])),
-            'target': }
+            'target':}
