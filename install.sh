@@ -1,8 +1,8 @@
 CONDA_ENV=PytorchLightningEnv
 echo "Cleaning up older environment"
+eval "$(/root/miniconda3/bin/conda shell.bash hook)"
 conda env remove -n $CONDA_ENV
 conda env create -f environment.yml
-eval "$(conda shell.bash hook)"
 conda activate $CONDA_ENV
 echo "Activated "$CONDA_ENV
 echo "Installing spaCy models..."
