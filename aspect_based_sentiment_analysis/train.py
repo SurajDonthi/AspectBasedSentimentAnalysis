@@ -1,5 +1,5 @@
 import os
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Union
 
@@ -14,9 +14,17 @@ from .tuner import args as params
 from .utils import save_args
 
 
-def get_loggers_and_callbacks(save_dir, version, args):
+def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> None:
+
+    version = get_version(args.log_path)
+    save_dir = Path(args.log_path) / f'version_{version:02d}'
+    os.makedirs(save_dir, exist_ok=True)
+
+    if is_save_args:
+        save_args(args, save_dir)
+
     loggers = [TestTubeLogger(
-        save_dir=save_dir, name="",
+        save_dir=save_dir, name='ABSA',
         description=args.description, debug=args.debug,
         create_git_tag=args.git_tag, version=version,
         # log_graph=True
@@ -57,21 +65,19 @@ def get_loggers_and_callbacks(save_dir, version, args):
 def get_version(log_path: Union[Path, str]) -> int:
     if not Path(log_path).exists():
         os.makedirs(log_path)
-        version = 0
+    version_folders = os.listdir(log_path)
+    if version_folders:
+        version = int(sorted(version_folders)[-1][-2:]) + 1
     else:
-        version = int(sorted(os.listdir(log_path))[-1][-2:]) + 1
+        version = 0
     return version
 
 
-def train(args):
-    version = get_version(args.log_path)
-    save_dir = Path(args.log_path) / f'version_{version:02d}'
-    os.makedirs(save_dir, exist_ok=True)
-    save_args(args, save_dir)
+def train(args: Namespace):
 
     model_pipeline = Pipeline.from_argparse_args(args)
 
-    loggers, callbacks = get_loggers_and_callbacks(save_dir, version, args)
+    loggers, callbacks = get_loggers_and_callbacks(args)
 
     trainer = Trainer.from_argparse_args(args,
                                          logger=loggers,
