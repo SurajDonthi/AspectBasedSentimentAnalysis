@@ -112,9 +112,10 @@ class SemEvalXMLDataset(Dataset):
         )
 
         return {
-            'input_ids': th.squeeze(th.tensor(encodings['input_ids'], dtype=th.long)),
-            'attention_mask': th.squeeze(th.tensor(encodings['attention_mask'])),
-            'target': target}
+            'input_ids': th.squeeze(encodings['input_ids'].type(th.long)),
+            'attention_mask': th.squeeze(encodings['attention_mask']),
+            'target': target
+        }
 
 
 class SemEvalDataModule(BaseDataModule):

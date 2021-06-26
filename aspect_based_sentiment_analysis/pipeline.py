@@ -1,8 +1,10 @@
+import logging
+import sys
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Optional, Union
 
-import torch as th:
+import torch as th
 import torch.nn.functional as F
 from pytorch_lightning.metrics.functional.classification import (
     multiclass_auroc, precision, precision_recall, recall)
@@ -22,6 +24,12 @@ from .data import SemEvalXMLDataset
 from .models import (DummyClassifier, SequenceClassifierModel,
                      TokenClassifierModel)
 from .utils import load_pretrained_model_or_tokenizer
+
+# logger = logging.getLogger()
+# logger.setLevel(logging.INFO)
+# handler = logging.StreamHandler(sys.stdout)
+# handler.setLevel(logging.INFO)
+# logger.addHandler(handler)
 
 LOSSES = {'bce': F.binary_cross_entropy,
           'bce_logits': F.binary_cross_entropy_with_logits,
@@ -189,10 +197,11 @@ class Pipeline(BaseModule):
 
         optim = AdamW(params,
                       lr=self.hparams.lr, **self.optim_args)
-        scheduler = get_linear_schedule_with_warmup(optim,
-                                                    num_warmup_steps=self.num_steps_per_epoch,  # Default value
-                                                    num_training_steps=self.trainer.max_epochs
-                                                    )
+        scheduler = get_linear_schedule_with_warmup(
+            optim,
+            num_warmup_steps=self.num_steps_per_epoch,
+            num_training_steps=self.trainer.max_epochs
+        )
         return [optim], [scheduler]
 
     def forward(self, batch):
