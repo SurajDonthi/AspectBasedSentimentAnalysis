@@ -24,9 +24,9 @@ def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> Non
         save_args(args, save_dir)
 
     loggers = [TestTubeLogger(
-        save_dir=save_dir, name='ABSA',
+        save_dir=save_dir, name='',
         description=args.description, debug=args.debug,
-        create_git_tag=args.git_tag, version=version,
+        create_git_tag=args.git_tag,
         # log_graph=True
     )]
     loggers[0].experiment

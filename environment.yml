@@ -54,5 +54,6 @@ dependencies:
       # - rake-nltk==1.0.4
       - test-tube
       - flat-table
+      - torch-tb-profiler
       # - gpustat
       # - windows-curses
