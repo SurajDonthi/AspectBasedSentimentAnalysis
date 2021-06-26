@@ -172,6 +172,7 @@ class Pipeline(BaseModule):
         print(f'Train length: {train_len}, Val length: {val_len}')
 
         self.train_data, self.val_data = random_split(self.train_data, [train_len, val_len])
+        # self.logger.experiment[0].log_graph(self.train_data[0])
 
     def train_dataloader(self):
         return DataLoader(self.train_data, batch_size=self.train_batchsize,

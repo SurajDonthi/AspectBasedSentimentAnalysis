@@ -1,7 +1,9 @@
 import os
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Union
 
+import comet_ml
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import (EarlyStopping, GPUStatsMonitor,
                                          LearningRateMonitor, ModelCheckpoint)
@@ -12,58 +14,68 @@ from .tuner import args as params
 from .utils import save_args
 
 
-def train(args):
-    if not Path(args.log_path).exists():
-        os.makedirs(args.log_path)
-        version = 0
-    else:
-        version = int(os.listdir(args.log_path)[-1][-2:]) + 1
-    save_dir = Path(args.log_path) / f'version_{version:02d}'
+def get_loggers_and_callbacks(save_dir, version, args):
     loggers = [TestTubeLogger(
         save_dir=save_dir, name="",
         description=args.description, debug=args.debug,
         create_git_tag=args.git_tag, version=version,
-        log_graph=True
+        # log_graph=True
     )]
     loggers[0].experiment
+    comet_log_path = save_dir / "comet_logs"
+    os.makedirs(comet_log_path, exist_ok=True)
     loggers += [CometLogger(
         api_key='afAkCM1UJSi12AtcUYJPLdK9v',
-        save_dir=save_dir,
+        save_dir=comet_log_path,
         project_name='AspectBasedSentimentAnalysis',
-        experiment_name='SentencePair' + f'_v{version}',
-        offline=args.debug, version=version,
-        log_graph=True
+        experiment_name='ABSA_SentencePair' + f'_v{version}',
+        offline=args.debug,
+        # log_graph=True
     )]
 
     checkpoint_dir = save_dir / "checkpoints"
     os.makedirs(checkpoint_dir, exist_ok=True)
-    chkpt_callback = ModelCheckpoint(
+
+    callbacks = [ModelCheckpoint(
         dirpath=checkpoint_dir,
         monitor='Loss/val_loss',
         save_last=True,
         mode='min',
         save_top_k=10,
         period=5
-    )
-    early_stop_callback = EarlyStopping(
+    )]
+    callbacks += [EarlyStopping(
         monitor='Loss/val_loss',
         mode='min'
-    )
-    # gpu_monitor = GPUStatsMonitor(True, True, True, True, True)
-    lr_montior = LearningRateMonitor()
+    )]
+    # callbacks += [GPUStatsMonitor(True, True, True, True, True)]
+    callbacks += [LearningRateMonitor()]
+
+    return loggers, callbacks
+
+
+def get_version(log_path: Union[Path, str]) -> int:
+    if not Path(log_path).exists():
+        os.makedirs(log_path)
+        version = 0
+    else:
+        version = int(sorted(os.listdir(log_path))[-1][-2:]) + 1
+    return version
+
+
+def train(args):
+    version = get_version(args.log_path)
+    save_dir = Path(args.log_path) / f'version_{version:02d}'
+    os.makedirs(save_dir, exist_ok=True)
+    save_args(args, save_dir)
 
     model_pipeline = Pipeline.from_argparse_args(args)
 
-    save_args(args, save_dir)
+    loggers, callbacks = get_loggers_and_callbacks(save_dir, version, args)
 
     trainer = Trainer.from_argparse_args(args,
                                          logger=loggers,
-                                         callbacks=[
-                                             early_stop_callback,
-                                             chkpt_callback,
-                                             # gpu_monitor,
-                                             lr_montior
-                                         ]
+                                         callbacks=callbacks
                                          )
 
     trainer.fit(model_pipeline)

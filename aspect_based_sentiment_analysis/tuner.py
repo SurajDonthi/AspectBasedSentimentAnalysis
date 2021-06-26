@@ -24,7 +24,7 @@ args.train_split_ratio = 0.7
 # args.limit_train_batches = 0.01
 # args.limit_val_batches = 0.01
 # args.limit_test_batches = 0.01
-args.fast_dev_run = 2
+# args.fast_dev_run = 2
 args.train_batchsize = 4
 args.val_batchsize = 4
 args.test_batchsize = 4
@@ -34,6 +34,6 @@ args.gradient_clip_val = 1.0
 
 # args.gpus = 1
 # args.log_gpu_memory = 'min_max'
-args.weights_summary = 'full'
+args.weights_summary = 'top'
 args.profiler = 'simple'
 # args.early_stop_callback = False
