@@ -17,7 +17,7 @@ def train(args):
         os.makedirs(args.log_path)
         version = 0
     else:
-        version = int(os.listdir(args.log_path)[-1][-2:])
+        version = int(os.listdir(args.log_path)[-1][-2:]) + 1
     save_dir = Path(args.log_path) / f'version_{version:02d}'
     loggers = [TestTubeLogger(
         save_dir=save_dir, name="",
