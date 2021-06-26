@@ -5,7 +5,7 @@ args = Namespace()
 
 args.description = "Training with Restaurant Reviews data for Aspect Sentiment Analysis"
 args.task = "aspect-sentiment"
-args.log_path = "./logs"
+args.log_path = "./.logs"
 args.max_epochs = 20
 args.data_path = "./data/Restaurants_Train.xml"
 args.test_path = "./data/restaurants-trial.xml"

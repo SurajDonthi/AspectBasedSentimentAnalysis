@@ -12,7 +12,8 @@ from transformers import (BertTokenizer, PreTrainedTokenizer,
                           PreTrainedTokenizerFast)
 
 from .base import BaseDataModule, BaseDataset
-from .utils import DirectoryNotFoundError, IsNotADirectoryError
+from .utils import (DirectoryNotFoundError, IsNotADirectoryError,
+                    load_pretrained_model_or_tokenizer)
 
 
 class SemEvalXMLDataset(Dataset):
@@ -20,8 +21,7 @@ class SemEvalXMLDataset(Dataset):
     def __init__(
         self,
         file_path: str,
-        tokenizer: Optional[Union[PreTrainedTokenizer,
-                                  PreTrainedTokenizerFast, str]] = 'bert-base-cased',
+        tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
         encoder_args: Optional[dict] = dict(),
         # reader_args: Optional[dict] = dict(),
         **kwargs
@@ -32,7 +32,12 @@ class SemEvalXMLDataset(Dataset):
         if not file_path.exists():
             raise FileNotFoundError(f"The file {file_path} does not exist!!")
         self.df = self.load_sem_eval_data(file_path)
+        self.preprocess_data()
 
+        self.tokenizer = tokenizer
+        self._encoder_args = encoder_args
+
+    def preprocess_data(self):
         # filters
         not_null_entities = self.df['entities.term'].notnull()
         not_conflict = self.df['entities.polarity'] != 'conflict'
@@ -44,19 +49,16 @@ class SemEvalXMLDataset(Dataset):
 
         self.texts = self.df['text']
         self.aspects = self.df['entities.term']
-        self.labels = self.df['entities.polarity'].codes
-
-        self.tokenizer = tokenizer
-        self._encoder_args = encoder_args
+        self.labels = self.df['entities.polarity'].cat.codes
 
     def load_xml_data_as_json(self, path: str):
         tree = ET.parse(path)
         root = tree.getroot()
 
         text_dataset = []
-        for sentence in root.getchildren():
+        for sentence in list(root):
             review = {}
-            children = sentence.getchildren()
+            children = list(sentence)
             # print(children)
             text = children[0].text
             review['text'] = text
@@ -65,7 +67,7 @@ class SemEvalXMLDataset(Dataset):
                 aspect_categories = children[1]
 
                 entity_categories = []
-                for category in aspect_categories.getchildren():
+                for category in list(aspect_categories):
                     entity_categories.append(category.attrib)
 
                 review['entity_category'] = entity_categories
@@ -75,12 +77,12 @@ class SemEvalXMLDataset(Dataset):
                 aspect_categories = children[2]
 
                 entities = []
-                for aspect_term in aspect_terms.getchildren():
+                for aspect_term in list(aspect_terms):
                     entities.append(aspect_term.attrib)
                 review['entities'] = entities
 
                 entity_categories = []
-                for category in aspect_categories.getchildren():
+                for category in list(aspect_categories):
                     entity_categories.append(category.attrib)
 
                 review['entity_category'] = entity_categories

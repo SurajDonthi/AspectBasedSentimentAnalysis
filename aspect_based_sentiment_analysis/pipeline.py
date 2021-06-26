@@ -10,10 +10,10 @@ from pytorch_lightning.metrics.functional.confusion_matrix import \
     confusion_matrix
 from pytorch_lightning.utilities import parsing
 from torch.utils.data import DataLoader, random_split
-from transformers import (AdamW, BertModel, BertTokenizer, DistilBertModel,
-                          DistilBertTokenizer, PreTrainedTokenizer,
+from transformers import (AdamW, BertModel, BertTokenizerFast, DistilBertModel,
+                          DistilBertTokenizerFast, PreTrainedTokenizer,
                           PreTrainedTokenizerFast, SqueezeBertModel,
-                          SqueezeBertTokenizer,
+                          SqueezeBertTokenizerFast,
                           get_linear_schedule_with_warmup)
 from typing_extensions import Literal
 
@@ -31,15 +31,15 @@ LOSSES = {'bce': F.binary_cross_entropy,
 
 BERT_BASE = {
     'bert': {'model': BertModel,
-             'tokenizer': BertTokenizer,
+             'tokenizer': BertTokenizerFast,
              'pretrained_model_name': '.weights/bert-base-cased',
              },
     'distil': {'model': DistilBertModel,
-               'tokenizer': DistilBertTokenizer,
+               'tokenizer': DistilBertTokenizerFast,
                'pretrained_model_name': '.weights/distilbert-base-multilingual-cased'
                },
     'squeeze': {'model': SqueezeBertModel,
-                'tokenizer': SqueezeBertTokenizer,
+                'tokenizer': SqueezeBertTokenizerFast,
                 'pretrained_model_name': '.weights/squeezebert/squeezebert-uncased'
                 }
 }
@@ -147,7 +147,7 @@ class Pipeline(BaseModule):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         parser.add_argument('--description', required=False, type=str)
         parser.add_argument('--log_path', type=str,
-                            default='./logs')
+                            default='./.logs')
         parser.add_argument('--git_tag', required=False, const=False,
                             type=parsing.str_to_bool, nargs='?')
         parser.add_argument('--debug', required=False, const=False,
