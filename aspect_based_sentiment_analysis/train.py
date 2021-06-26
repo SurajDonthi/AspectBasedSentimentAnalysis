@@ -12,7 +12,7 @@ from .tuner import args as params
 from .utils import save_args
 
 
-def main(args):
+def train(args):
     if not Path(args.log_path).exists():
         os.makedirs(args.log_path)
         version = 0
@@ -77,4 +77,4 @@ if __name__ == "__main__":
     if 'params' in locals():
         args.__dict__.update(params.__dict__)
 
-    main(args)
+    train(args)
