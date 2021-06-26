@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Optional, Union
 
-import torch
+import torch as th:
 import torch.nn.functional as F
 from pytorch_lightning.metrics.functional.classification import (
     multiclass_auroc, precision, precision_recall, recall)
@@ -117,7 +117,8 @@ class Pipeline(BaseModule):
         self.test_batchsize = test_batchsize
         self.val_batchsize = val_batchsize
         self.num_workers = num_workers
-        self._dataset_args = dataset_args.update(dict(encoder_args=encoder_args))
+        dataset_args.update(dict(encoder_args=encoder_args))
+        self._dataset_args = dataset_args
 
         self.criterion = LOSSES[criterion]
         self.lr = lr
@@ -189,25 +190,21 @@ class Pipeline(BaseModule):
         optim = AdamW(params,
                       lr=self.hparams.lr, **self.optim_args)
         scheduler = get_linear_schedule_with_warmup(optim,
-                                                    num_warmup_steps=self.trainer.num_steps,  # Default value
+                                                    num_warmup_steps=self.num_steps_per_epoch,  # Default value
                                                     num_training_steps=self.trainer.max_epochs
                                                     )
         return [optim], [scheduler]
 
     def forward(self, batch):
-        input_ids, attention_mask = batch
-
-        embeddings = self.bert_base(input_ids=input_ids,
-                                    attention_mask=attention_mask,
-                                    )
+        embeddings = self.bert_base(**batch)
         return self.classifier(embeddings)
 
     def shared_step(self, batch, return_preds=False):
-        *batch, targets = batch
+        targets = batch.pop('target').type(th.long)
         out = self(batch)
 
         loss = self.criterion(out, targets)
-        _, preds = torch.max(out, dim=1)
+        _, preds = th.max(out, dim=1)
         acc = (preds == targets).float().mean()
 
         if return_preds:
