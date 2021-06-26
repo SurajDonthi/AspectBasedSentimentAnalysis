@@ -56,7 +56,7 @@ def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> Non
         monitor='Loss/val_loss',
         mode='min'
     )]
-    # callbacks += [GPUStatsMonitor(True, True, True, True, True)]
+    callbacks += [GPUStatsMonitor(True, True, True, True)]
     callbacks += [LearningRateMonitor()]
 
     return loggers, callbacks

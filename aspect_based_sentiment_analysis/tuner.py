@@ -28,13 +28,13 @@ args.train_split_ratio = 0.7
 args.train_batchsize = 16
 args.val_batchsize = 16
 args.test_batchsize = 16
-args.num_workers = 2
+args.num_workers = 12
 args.debug = False
 args.git_tag = True
 args.gradient_clip_val = 1.0
 
 args.gpus = 1
-args.log_gpu_memory = 'all'
+# args.log_gpu_memory = 'all'
 args.weights_summary = 'top'
 args.profiler = 'simple'
 # args.early_stop_callback = False
