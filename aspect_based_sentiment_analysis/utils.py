@@ -1,7 +1,9 @@
 import csv
 import inspect
+import os
 from argparse import Namespace
 from pathlib import Path
+from typing import Union
 
 from loguru import logger
 
@@ -12,6 +14,16 @@ def save_args(args: Namespace, save_dir: Path) -> None:
         csvw.writerow(['hparam', 'value'])
         for k, v in args.__dict__.items():
             csvw.writerow([k, v])
+
+
+def get_version(log_path: Union[Path, str]) -> int:
+    if not Path(log_path).exists():
+        os.makedirs(log_path)
+    try:
+        version = sorted(map(lambda x: int(x.split('_')[-1]), os.listdir(log_path)))[-1]
+    except IndexError:
+        version = 0
+    return version
 
 
 def get_default_args(func):

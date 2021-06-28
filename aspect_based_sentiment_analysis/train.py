@@ -13,7 +13,7 @@ from pytorch_lightning.loggers import CometLogger, TestTubeLogger
 
 from .pipeline import Pipeline
 from .tuner import args as params
-from .utils import save_args
+from .utils import get_version, save_args
 
 
 def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> None:
@@ -66,17 +66,6 @@ def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> Non
     # callbacks += [PyTorchLightningPruningCallback()]
 
     return loggers, callbacks
-
-
-def get_version(log_path: Union[Path, str]) -> int:
-    if not Path(log_path).exists():
-        os.makedirs(log_path)
-    version_folders = os.listdir(log_path)
-    if version_folders:
-        version = int(sorted(version_folders)[-1][-2:]) + 1
-    else:
-        version = 0
-    return version
 
 
 def train(args: Namespace):
