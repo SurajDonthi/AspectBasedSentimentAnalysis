@@ -5,6 +5,30 @@ from argparse import Namespace
 
 import optuna
 
+from .train import train
+
+
+def objective(trial: optuna.trial.Trial) -> float:
+
+    return train(args)
+
+
+def tuner():
+    pruner: optuna.pruners.BasePruner = (
+        optuna.pruners.MedianPruner() if args.pruning else optuna.pruners.NopPruner()
+    )
+
+    study = optuna.create_study(direction="maximize", pruner=pruner)
+    study.optimize(objective, n_trials=20)
+
+    print("Number of finished trials: {}".format(len(study.trials)))
+
+    print("Best trial:")
+    trial = study.best_trial
+
+    print("  Value: {}".format(trial.value))
+
+
 args = Namespace()
 
 args.description = "Training with Restaurant Reviews data for Aspect Sentiment Analysis. Fixed FreezeBERT inverse argument"

@@ -80,6 +80,7 @@ def train(args: Namespace):
                                          )
 
     trainer.fit(model_pipeline)
+    # trainer.logger.log_hyperparams(hyperparameters)
     trainer.test(model_pipeline)
 
     # return trainer.callback_metrics['Accuracy/val_acc'].item()
