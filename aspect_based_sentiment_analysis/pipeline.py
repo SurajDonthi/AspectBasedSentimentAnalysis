@@ -243,7 +243,7 @@ class Pipeline(BaseModule):
             self.log_dict(logs, prog_bar=True)
 
     def test_step(self, batch, batch_idx):
-        *_, targets = batch
+        targets = batch['target']
         loss, acc, out, preds = self.shared_step(batch, return_preds=True)
 
         # p = precision(out, targets)

@@ -51,7 +51,7 @@ def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> Non
         monitor='Loss/val_loss',
         save_last=True,
         mode='min',
-        save_top_k=10,
+        save_top_k=3,
         period=5
     )]
     callbacks += [EarlyStopping(
