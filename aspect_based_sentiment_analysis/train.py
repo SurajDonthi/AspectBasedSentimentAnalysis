@@ -19,7 +19,7 @@ from .utils import get_version, save_args
 def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> None:
 
     version = get_version(args.log_path)
-    save_dir = Path(args.log_path) / f'version_{version:02d}'
+    save_dir = Path(args.log_path) / f'version_{version}'
     os.makedirs(save_dir, exist_ok=True)
 
     if is_save_args:
