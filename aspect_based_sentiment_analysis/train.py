@@ -63,7 +63,7 @@ def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> Non
         logging_interval='step',
         log_momentum=True
     )]
-    # callbacks += [PyTorchLightningPruningCallback()]
+    # callbacks += [PyTorchLightningPruningCallback(trial, 'Accuracy/val_acc')]
 
     return loggers, callbacks
 
