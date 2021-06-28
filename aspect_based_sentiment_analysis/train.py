@@ -59,7 +59,10 @@ def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> Non
         mode='min'
     )]
     callbacks += [GPUStatsMonitor(True, True, True, True)]
-    callbacks += [LearningRateMonitor()]
+    callbacks += [LearningRateMonitor(
+        logging_interval='step',
+        log_momentum=True
+    )]
     # callbacks += [PyTorchLightningPruningCallback()]
 
     return loggers, callbacks
