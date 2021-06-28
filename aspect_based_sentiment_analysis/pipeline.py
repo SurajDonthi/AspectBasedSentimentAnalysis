@@ -192,7 +192,7 @@ class Pipeline(BaseModule):
 
     def configure_optimizers(self):
         params = []
-        if self.hparams.freeze_bert:
+        if not self.hparams.freeze_bert:
             params += list(self.bert_base.parameters())
         params += list(self.classifier.parameters())
 
