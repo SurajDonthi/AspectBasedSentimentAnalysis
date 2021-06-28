@@ -200,8 +200,8 @@ class Pipeline(BaseModule):
                       lr=self.hparams.lr, **self.optim_args)
         scheduler = get_linear_schedule_with_warmup(
             optim,
-            num_warmup_steps=self.num_steps_per_epoch,
-            num_training_steps=self.trainer.max_epochs
+            num_warmup_steps=200,
+            num_training_steps=self.num_training_steps
         )
         return [optim], [scheduler]
 

@@ -1,5 +1,9 @@
-# Currently use Namespace variables, Need to add a hyperparameter tuning package
+# Currently use Namespace variables,
+# TODO: Need to add a hyperparameter tuning package
+# Possibly change from namespace to something else like Hydra, OmegaConf
 from argparse import Namespace
+
+import optuna
 
 args = Namespace()
 

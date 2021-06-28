@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Union
 
 import comet_ml
+from optuna.integration.pytorch_lightning import \
+    PyTorchLightningPruningCallback
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import (EarlyStopping, GPUStatsMonitor,
                                          LearningRateMonitor, ModelCheckpoint)
@@ -58,6 +60,7 @@ def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> Non
     )]
     callbacks += [GPUStatsMonitor(True, True, True, True)]
     callbacks += [LearningRateMonitor()]
+    # callbacks += [PyTorchLightningPruningCallback()]
 
     return loggers, callbacks
 
@@ -86,6 +89,8 @@ def train(args: Namespace):
 
     trainer.fit(model_pipeline)
     trainer.test(model_pipeline)
+
+    # return trainer.callback_metrics['Accuracy/val_acc'].item()
 
 
 if __name__ == "__main__":
