@@ -20,7 +20,7 @@ def get_version(log_path: Union[Path, str]) -> int:
     if not Path(log_path).exists():
         os.makedirs(log_path)
     try:
-        version = sorted(map(lambda x: int(x.split('_')[-1]), os.listdir(log_path)))[-1]
+        version = sorted(map(lambda x: int(x.split('_')[-1]), os.listdir(log_path)))[-1] + 1
     except IndexError:
         version = 0
     return version

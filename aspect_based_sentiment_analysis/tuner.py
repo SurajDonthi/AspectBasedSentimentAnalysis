@@ -7,7 +7,7 @@ import optuna
 
 args = Namespace()
 
-args.description = "Training with Restaurant Reviews data for Aspect Sentiment Analysis"
+args.description = "Training with Restaurant Reviews data for Aspect Sentiment Analysis. Fixed FreezeBERT inverse argument"
 args.task = "aspect-sentiment"
 args.log_path = "./.logs"
 args.max_epochs = 20
