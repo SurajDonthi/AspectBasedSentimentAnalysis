@@ -48,14 +48,14 @@ def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> Non
 
     callbacks = [ModelCheckpoint(
         dirpath=checkpoint_dir,
-        monitor='Loss/val_acc',
+        monitor='val_acc',
         save_last=True,
         mode='max',
         save_top_k=3,
         period=5
     )]
     callbacks += [EarlyStopping(
-        monitor='Loss/val_acc',
+        monitor='val_acc',
         mode='max',
         patience=5,
     )]
