@@ -34,7 +34,7 @@ class SequenceClassifierModel(nn.Module):
             nn.Linear(self.embedding_size, self.num_classes),
             nn.Softmax(dim=-1)
         )
-        nn.init.xavier_uniform_(self.classifier[1].weight)
+        nn.init.kaiming_normal_(self.classifier[1].weight)
         self.classifier[1].bias.data.fill_(0.01)
 
     def forward(self, embeddings):

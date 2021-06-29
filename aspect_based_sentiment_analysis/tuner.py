@@ -31,7 +31,7 @@ def tuner():
 
 args = Namespace()
 
-args.description = "Training with Restaurant Reviews data for Aspect Sentiment Analysis. With Xavier Initialization"
+args.description = "Training with Restaurant Reviews data for Aspect Sentiment Analysis. With Kaiming Normal Initialization"
 args.task = "aspect-sentiment"
 args.log_path = "./.logs"
 args.max_epochs = 20

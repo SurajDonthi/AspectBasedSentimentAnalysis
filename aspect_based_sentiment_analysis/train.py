@@ -48,15 +48,15 @@ def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> Non
 
     callbacks = [ModelCheckpoint(
         dirpath=checkpoint_dir,
-        monitor='Loss/val_loss',
+        monitor='Loss/val_acc',
         save_last=True,
-        mode='min',
+        mode='max',
         save_top_k=3,
         period=5
     )]
     callbacks += [EarlyStopping(
-        monitor='Loss/val_loss',
-        mode='min',
+        monitor='Loss/val_acc',
+        mode='max',
         patience=5,
     )]
     callbacks += [GPUStatsMonitor(True, True, True, True)]
