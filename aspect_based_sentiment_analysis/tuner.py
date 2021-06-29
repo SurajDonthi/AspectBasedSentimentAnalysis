@@ -47,7 +47,7 @@ args.encoder_args = dict(
     truncation=True,
     return_tensors='pt'
 )
-args.lr = 1e-3
+args.lr = 1e-5
 args.train_split_ratio = 0.7
 # args.limit_train_batches = 0.01
 # args.limit_val_batches = 0.01
