@@ -263,7 +263,7 @@ class Pipeline(BaseModule):
             # 'Multiclass AUROC': auroc
         }
         self.log_dict(logs)
-        self.log('val_acc', loss, prog_bar=True)
+        self.log('test_acc', loss, prog_bar=True)
 
     def get_progress_bar_dict(self) -> Dict[str, Union[int, str]]:
         items = super().get_progress_bar_dict()
