@@ -228,7 +228,13 @@ class Pipeline(BaseModule):
             'Loss/train_loss': loss,
             'Accuracy/train_acc': acc
         }
-        self.log_dict(logs, prog_bar=True, on_epoch=True, on_step=True)
+        self.log_dict(logs, on_epoch=True, on_step=True)
+
+        pbar_logs = logs = {
+            'train_loss': loss,
+            'train_acc': acc
+        }
+        self.log_dict(pbar_logs, prog_bar=True)
 
         return loss
 
@@ -240,7 +246,8 @@ class Pipeline(BaseModule):
                 'Loss/val_loss': loss,
                 'Accuracy/val_acc': acc,
             }
-            self.log_dict(logs, prog_bar=True)
+            self.log_dict(logs)
+            self.log('val_acc', loss, prog_bar=True)
 
     def test_step(self, batch, batch_idx):
         targets = batch['target']
@@ -256,3 +263,4 @@ class Pipeline(BaseModule):
             # 'Multiclass AUROC': auroc
         }
         self.log_dict(logs)
+        self.log('val_acc', loss, prog_bar=True)
