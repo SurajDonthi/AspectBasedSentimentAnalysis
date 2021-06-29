@@ -231,8 +231,8 @@ class Pipeline(BaseModule):
         self.log_dict(logs, on_epoch=True, on_step=True)
 
         pbar_logs = logs = {
-            'train_loss': loss,
-            'train_acc': acc
+            'loss_train': loss,
+            'acc_train': acc
         }
         self.log_dict(pbar_logs, prog_bar=True)
 
@@ -247,7 +247,7 @@ class Pipeline(BaseModule):
                 'Accuracy/val_acc': acc,
             }
             self.log_dict(logs)
-            self.log('val_acc', loss, prog_bar=True)
+            self.log('acc_val', acc, prog_bar=True)
 
     def test_step(self, batch, batch_idx):
         targets = batch['target']
@@ -263,7 +263,7 @@ class Pipeline(BaseModule):
             # 'Multiclass AUROC': auroc
         }
         self.log_dict(logs)
-        self.log('test_acc', loss, prog_bar=True)
+        self.log('acc_test', acc, prog_bar=True)
 
     def get_progress_bar_dict(self) -> Dict[str, Union[int, str]]:
         items = super().get_progress_bar_dict()

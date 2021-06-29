@@ -56,7 +56,8 @@ def get_loggers_and_callbacks(args: Namespace, is_save_args: bool = True) -> Non
     )]
     callbacks += [EarlyStopping(
         monitor='Loss/val_loss',
-        mode='min'
+        mode='min',
+        patience=5,
     )]
     callbacks += [GPUStatsMonitor(True, True, True, True)]
     callbacks += [LearningRateMonitor(
