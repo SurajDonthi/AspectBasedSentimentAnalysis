@@ -2,7 +2,7 @@ import logging
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 import torch as th
 import torch.nn.functional as F
@@ -264,3 +264,8 @@ class Pipeline(BaseModule):
         }
         self.log_dict(logs)
         self.log('val_acc', loss, prog_bar=True)
+
+    def get_progress_bar_dict(self) -> Dict[str, Union[int, str]]:
+        items = super().get_progress_bar_dict()
+        items.pop("v_num", None)
+        return items
