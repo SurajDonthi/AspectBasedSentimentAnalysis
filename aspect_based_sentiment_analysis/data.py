@@ -29,8 +29,6 @@ class SemEvalXMLDataset(Dataset):
         super().__init__()
 
         file_path = Path(file_path)
-        if not file_path.exists():
-            raise FileNotFoundError(f"The file {file_path} does not exist!!")
         self.df = self.load_sem_eval_data(file_path)
         self.preprocess_data()
 
