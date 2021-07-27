@@ -1,6 +1,7 @@
 import logging
 
 import pytest
+import torch as th
 from aspect_based_sentiment_analysis.data import (ReviewsMLMDataset,
                                                   SemEvalXMLDataset)
 from transformers import BertTokenizerFast
@@ -49,8 +50,9 @@ def test_reviews_mlm_dataset_init(reviews_dataset):
     assert len(reviews_dataset) == 143443
 
 
-def test_reviews_mlm_dataset_getitem(semeval_dataset):
-    inputs = semeval_dataset[0]
+def test_reviews_mlm_dataset_getitem(reviews_dataset):
+    inputs = reviews_dataset[0]
     assert isinstance(inputs, dict)
     assert 'input_ids' in inputs
     assert 'attention_mask' in inputs
+    assert inputs['target'].shape == th.Size([512])

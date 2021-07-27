@@ -124,10 +124,13 @@ class ReviewsMLMDataset(Dataset):
         tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
         mask_pctg: float = .15,
         encoder_args: Optional[dict] = dict(
-            return_tensors='pt',
             max_length=512,
+            add_special_tokens=True,
+            return_token_type_ids=False,
+            return_attention_mask=True,
+            padding='max_length',
             truncation=True,
-            padding='max_length'
+            return_tensors='pt'
         ),
         read_args: Optional[dict] = dict()
     ):
@@ -143,7 +146,7 @@ class ReviewsMLMDataset(Dataset):
         return len(self.data)
 
     def mask_inputs(self, inputs):
-        rand_arr = th.rand_like(inputs.input_ids)
+        rand_arr = th.rand(inputs.input_ids.shape)
         mask_arr = (rand_arr < self.mask_pctg) * \
             (inputs.input_ids != 101) * (inputs.input_ids != 102)
         selection = th.flatten((mask_arr[0]).nonzero()).tolist()
@@ -153,10 +156,14 @@ class ReviewsMLMDataset(Dataset):
     def __getitem__(self, index):
         text = self.data.review_text[index]
         inputs = self.tokenizer.encode_plus(text=text, **self._encoder_args)
-        labels = inputs.input_ids
+        target = inputs.input_ids
         masked_inputs = self.mask_inputs(inputs)
 
-        return masked_inputs, labels
+        return {
+            'input_ids': th.squeeze(masked_inputs['input_ids'].type(th.long)),
+            'attention_mask': th.squeeze(masked_inputs['attention_mask']),
+            'target': th.squeeze(target.type(th.long))
+        }
 
 
 class SemEvalDataModule(BaseDataModule):
