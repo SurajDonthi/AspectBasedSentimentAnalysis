@@ -20,7 +20,7 @@ class SemEvalXMLDataset(Dataset):
 
     def __init__(
         self,
-        file_path: str,
+        filepath: str,
         tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
         encoder_args: Optional[dict] = dict(),
         # reader_args: Optional[dict] = dict(),
@@ -28,8 +28,8 @@ class SemEvalXMLDataset(Dataset):
     ):
         super().__init__()
 
-        file_path = Path(file_path)
-        self.df = self.load_sem_eval_data(file_path)
+        filepath = Path(filepath)
+        self.df = self.load_sem_eval_data(filepath)
         self.preprocess_data()
 
         self.tokenizer = tokenizer
@@ -114,6 +114,48 @@ class SemEvalXMLDataset(Dataset):
             'attention_mask': th.squeeze(encodings['attention_mask']),
             'target': target
         }
+
+
+class ReviewsMLMDataset(Dataset):
+
+    def __init__(self,
+                 filepath: str,
+                 tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
+                 mask_pctg: float = .15,
+                 encoder_args: Optional[dict] = dict(
+                     return_tensors='pt',
+                     max_length=512,
+                     truncation=True,
+                     padding='max_length'
+                 ),
+                 read_args: Optional[dict] = dict()
+                 ):
+        super().__init__()
+        filepath = Path(filepath)
+
+        self.data = pd.read_csv(filepath_or_buffer=filepath, **read_args)
+        self.mask_pctg = mask_pctg
+        self.tokenizer = tokenizer
+        self._encoder_args = encoder_args
+
+    def __len__(self):
+        return len(self.data)
+
+    def mask_inputs(self, inputs):
+        rand_arr = th.rand_like(inputs.input_ids)
+        mask_arr = (rand_arr < self.mask_pctg) * \
+            (inputs.input_ids != 101) * (inputs.input_ids != 102)
+        selection = th.flatten((mask_arr[0]).nonzero()).tolist()
+        inputs.input_ids[0, selection] = 103
+        return inputs
+
+    def __getitem__(self, index):
+        text = self.data.review_text[index]
+        inputs = self.tokenizer.encode_plus(text=text, **self._encoder_args)
+        labels = inputs.input_ids
+        masked_inputs = self.mask_inputs(inputs)
+
+        return masked_inputs, labels
 
 
 class SemEvalDataModule(BaseDataModule):

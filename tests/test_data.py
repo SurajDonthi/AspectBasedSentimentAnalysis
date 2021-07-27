@@ -1,11 +1,12 @@
 import pytest
-from aspect_based_sentiment_analysis.data import SemEvalXMLDataset
+from aspect_based_sentiment_analysis.data import (ReviewsMLMDataset,
+                                                  SemEvalXMLDataset)
 from transformers import BertTokenizerFast
 
 
 @pytest.fixture()
 def semeval_dataset():
-    tokenizer = BertTokenizerFast.from_pretrained('.weights/bert-base-cased')
+    tokenizer = BertTokenizerFast.from_pretrained('bert-base-cased')
     encoder_args = dict(
         max_length=512,
         add_special_tokens=True,
@@ -29,3 +30,11 @@ def test_xml_data_getitem(semeval_dataset):
     assert isinstance(inputs, dict)
     assert 'input_ids' in inputs
     assert 'attention_mask' in inputs
+
+
+def test_reviews_mlm_dataset():
+    filepath = 'data/raw/reviews_data.csv'
+    tokenizer = BertTokenizerFast.from_pretrained('bert-base-cased')
+
+    dataset = ReviewsMLMDataset(filepath, tokenizer,
+                                read_args=dict(usecols='reviews_text'))
