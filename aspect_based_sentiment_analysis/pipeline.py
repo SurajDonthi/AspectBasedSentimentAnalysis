@@ -1,5 +1,3 @@
-import logging
-import sys
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Dict, Optional, Union
@@ -12,72 +10,13 @@ from pytorch_lightning.metrics.functional.confusion_matrix import \
     confusion_matrix
 from pytorch_lightning.utilities import parsing
 from torch.utils.data import DataLoader, random_split
-from transformers import (AdamW, BertModel, BertTokenizerFast, DistilBertModel,
-                          DistilBertTokenizerFast, PreTrainedTokenizer,
-                          PreTrainedTokenizerFast, SqueezeBertModel,
-                          SqueezeBertTokenizerFast,
+from transformers import (AdamW, PreTrainedTokenizer, PreTrainedTokenizerFast,
                           get_linear_schedule_with_warmup)
 from typing_extensions import Literal
 
 from .base import BaseModule
-from .data import SemEvalXMLDataset
-from .models import (DummyClassifier, SequenceClassifierModel,
-                     TokenClassifierModel)
+from .losses import LOSSES
 from .utils import load_pretrained_model_or_tokenizer
-
-# logger = logging.getLogger()
-# logger.setLevel(logging.INFO)
-# handler = logging.StreamHandler(sys.stdout)
-# handler.setLevel(logging.INFO)
-# logger.addHandler(handler)
-
-LOSSES = {'bce': F.binary_cross_entropy,
-          'bce_logits': F.binary_cross_entropy_with_logits,
-          'cross_entropy': F.cross_entropy, 'nll_loss': F.nll_loss,
-          'kl_div': F.kl_div, 'mse': F.mse_loss,
-          'l1_loss': F.l1_loss}
-
-BERT_BASE = {
-    'bert': {'model': BertModel,
-             'tokenizer': BertTokenizerFast,
-             'pretrained_model_name': '.weights/bert-base-cased',
-             },
-    'distil': {'model': DistilBertModel,
-               'tokenizer': DistilBertTokenizerFast,
-               'pretrained_model_name': '.weights/distilbert-base-multilingual-cased'
-               },
-    'squeeze': {'model': SqueezeBertModel,
-                'tokenizer': SqueezeBertTokenizerFast,
-                'pretrained_model_name': '.weights/squeezebert/squeezebert-uncased'
-                }
-}
-
-TASKS = {
-    'classification': {
-        'model': SequenceClassifierModel,
-        'dataset': None
-    },
-    # 'sentiment-analysis': {
-    #     'model': SequenceClassifierModel,
-    #     'dataset': SentimentDataset
-    # },
-    'aspect-sentiment': {
-        'model': SequenceClassifierModel,
-        'dataset': SemEvalXMLDataset
-    },
-    'ner': {
-        'model': TokenClassifierModel,
-        'dataset': None
-    },
-    'pos-tagging': {
-        'model': TokenClassifierModel,
-        'dataset': None
-    },
-    'semantic-similarity': {
-        'model': DummyClassifier,
-        'dataset': None
-    },
-}
 
 # SCHEDULERS = {
 #     'linear_with_warmup': get_linear_schedule_with_warmup
