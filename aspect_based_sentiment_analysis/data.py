@@ -118,18 +118,19 @@ class SemEvalXMLDataset(Dataset):
 
 class ReviewsMLMDataset(Dataset):
 
-    def __init__(self,
-                 filepath: str,
-                 tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
-                 mask_pctg: float = .15,
-                 encoder_args: Optional[dict] = dict(
-                     return_tensors='pt',
-                     max_length=512,
-                     truncation=True,
-                     padding='max_length'
-                 ),
-                 read_args: Optional[dict] = dict()
-                 ):
+    def __init__(
+        self,
+        filepath: str,
+        tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
+        mask_pctg: float = .15,
+        encoder_args: Optional[dict] = dict(
+            return_tensors='pt',
+            max_length=512,
+            truncation=True,
+            padding='max_length'
+        ),
+        read_args: Optional[dict] = dict()
+    ):
         super().__init__()
         filepath = Path(filepath)
 
