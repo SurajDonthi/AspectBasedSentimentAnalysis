@@ -3,11 +3,6 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 import torch as th
-import torch.nn.functional as F
-from pytorch_lightning.metrics.functional.classification import (
-    multiclass_auroc, precision, precision_recall, recall)
-from pytorch_lightning.metrics.functional.confusion_matrix import \
-    confusion_matrix
 from pytorch_lightning.utilities import parsing
 from torch.utils.data import DataLoader, random_split
 from transformers import (AdamW, PreTrainedTokenizer, PreTrainedTokenizerFast,
@@ -15,7 +10,9 @@ from transformers import (AdamW, PreTrainedTokenizer, PreTrainedTokenizerFast,
 from typing_extensions import Literal
 
 from .base import BaseModule
+from .bert_bases import BERT_BASE
 from .losses import LOSSES
+from .tasks import TASKS
 from .utils import load_pretrained_model_or_tokenizer
 
 # SCHEDULERS = {
@@ -189,7 +186,7 @@ class Pipeline(BaseModule):
             self.log('val_acc', acc, prog_bar=True)
 
     def test_step(self, batch, batch_idx):
-        targets = batch['target']
+        # targets = batch['target']
         loss, acc, out, preds = self.shared_step(batch, return_preds=True)
 
         # p = precision(out, targets)
